@@ -40,24 +40,22 @@ The ad rendered in a fenced frame must be served from an HTTPS origin. The ad re
 1. Add the 4437 `server` block into the `http` block in the config. Replace `[USER-NAME]` with the path that your certificate is stored in:
 
 ```nginx
-http {
-  # HTTPS server
-  server {
-    listen  4437 ssl;
-    ssl_certificate  /Users/[USER-NAME]/certs/localhost.pem;
-    ssl_certificate_key /Users/[USER-NAME]/certs/localhost-key.pem;
+    # HTTPS server
+    server {
+        listen  4437 ssl;
+        ssl_certificate  /Users/[USER-NAME]/certs/localhost.pem;
+        ssl_certificate_key /Users/[USER-NAME]/certs/localhost-key.pem;
 
-    location / {
-      proxy_set_header        Host $host;
-      proxy_set_header        X-Real-IP $remote_addr;
-      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header        X-Forwarded-Proto $scheme;
-
-      proxy_pass          http://localhost:8087/;
-      proxy_read_timeout  90;
+        location / {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+        
+            proxy_pass          http://localhost:3007/;
+            proxy_read_timeout  90;
+        }
     }
-  }
-}
 ```
 
 4. Stop the `nginx` server with `nginx -s stop`
@@ -66,6 +64,13 @@ http {
 The above `nginx` configuration proxies `https://localhost:4437` to `http://localhost:8087` (Content producer server).
 
 ### Setup Firebase
+This application requires the use of Node v16. 
+
+The last Node v16 compatible version of `firebase-tools` is `12.9.1`
+```
+nvm use 16
+npm install -g firebase-tools@12.9.1
+```
 
 - Setup [Firebase tools](https://github.com/firebase/firebase-tools)
 
@@ -81,7 +86,16 @@ The above `nginx` configuration proxies `https://localhost:4437` to `http://loca
 npm run dev
 ```
 
-And visit `http://localhost:8080` for the main page
+And visit `http://localhost:3000` for the main page
+
+
+### Privacy Sandbox Enrollment Overrides
+When testing locally visit [chrome://flags/#privacy-sandbox-ads-apis](chrome://flags/#privacy-sandbox-ads-apis) and enable
+Privacy Sandbox Enrollment Overrides and add 
+```
+https://localhost:4437,http://localhost:3007
+```
+to the domain overrides list for that section
 
 ### Deploy code
 
